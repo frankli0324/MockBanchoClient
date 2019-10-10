@@ -1,5 +1,6 @@
 from hashlib import md5
 import requests
+from packets import unserialize, serialize
 
 
 class BanchoClient(requests.Session):
@@ -21,7 +22,7 @@ class BanchoClient(requests.Session):
         self.cookies.clear()
         return resp
 
-    def __init__(self, username: str, password: str, check_latest=False):
+    def __init__(self, check_latest=False):
         super().__init__()
         self.headers.clear()
         self.headers.update({
@@ -38,6 +39,7 @@ class BanchoClient(requests.Session):
                 if i['filename'] == 'osu!.exe':
                     self.EXECUTABLE_HASH = i['file_hash']
 
+    def login(self, username, password):
         metadata = ':'.join([
             self.EXECUTABLE_HASH,
             self.REMARKS,
@@ -45,14 +47,6 @@ class BanchoClient(requests.Session):
             self._md5(self._md5('unknown')),
             self._md5(self._md5('unknown'))
         ])+':'
-
-        self.country_code = self.get('https://osu.ppy.sh/web/bancho_connect.php', params={
-            'v': self.CLIENT_VERSION,
-            'u': username,
-            'h': self._md5(password),
-            'fx': 'dotnet4|dotnet4',
-            'ch': metadata
-        }).text
         login_data = '\n'.join([
             username, self._md5(password),
             '|'.join([
@@ -63,8 +57,17 @@ class BanchoClient(requests.Session):
                 '0'
             ])
         ])+'\n'
-        print(login_data)
+
+        self.country_code = self.get('https://osu.ppy.sh/web/bancho_connect.php', params={
+            'v': self.CLIENT_VERSION,
+            'u': username,
+            'h': self._md5(password),
+            'fx': 'dotnet4|dotnet4',
+            'ch': metadata
+        }).text
+
         cho_token = ''
+        login_packet = None
         while cho_token == '':
             try:
                 res = self.post(self.DOMAIN, headers={
@@ -72,7 +75,18 @@ class BanchoClient(requests.Session):
                 }, data=login_data)
                 assert(res.status_code == 200)
                 cho_token = res.headers['cho-token']
-                print(res.content)
+                login_packet = res.content
             except AssertionError:
                 pass
         self.headers.update({'osu-token': cho_token})
+        return login_packet
+
+    def poll(self):
+        while True:
+            res = unserialize(
+                self.post(self.DOMAIN, data=serialize(
+                    []
+                ))
+                .content
+            )
+            __import__('time').sleep(5)
