@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,9 +8,9 @@ using Newtonsoft.Json.Linq;
 
 namespace MockBanchoClient {
     public class Client {
-        private string version = "b20191006.1";
+        private string version = "b20191211.2";
         private string timezone = "8";
-        private string executable_hash = "6e9fd4b6476e70d0760d88d4cca616ec";
+        private string executable_hash = "126db5e3d941e74e2798685052e91bca";
         private string login_remarks = ""; // Marks osu clients running on wine sometimes
         private string metadata_info {
             get {
@@ -69,6 +70,9 @@ namespace MockBanchoClient {
                 return false;
             client.DefaultRequestHeaders.Add ("osu-token", response.Headers.GetValues ("cho-token"));
             return true;
+        }
+        public async Task<IEnumerable<Packets.IPacket>> Poll () {
+            throw new NotImplementedException ();
         }
     }
 }
