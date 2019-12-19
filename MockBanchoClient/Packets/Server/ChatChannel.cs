@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {

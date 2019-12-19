@@ -56,7 +56,7 @@ namespace MockBanchoClient.Packets {
                 );
                 return packet;
             }
-            throw new KeyNotFoundException ("Unknown Packet Type");
+            throw new KeyNotFoundException ("Unknown Packet Type: " + packet_type);
         }
     }
 }

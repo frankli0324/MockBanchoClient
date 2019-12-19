@@ -4,7 +4,7 @@ using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
     [Packet (11)]
-    public class UsersDetail : IPacket {
+    public class UserDetail : IPacket {
         public int user_id;
         public UserStatus status = new UserStatus ();
         public long score_ranked, score_total;
