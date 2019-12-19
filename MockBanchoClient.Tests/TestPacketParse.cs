@@ -1,33 +1,63 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using MockBanchoClient.Packets;
 using MockBanchoClient.Serialization;
 using Xunit;
 
-namespace MockBanchoClientTest {
+namespace MockBanchoClientTest
+{
     public class PacketParse {
-        private static Dictionary<Type, string> packets = new Dictionary<Type, string> () {
-            {
-            // typeof (LockClient),
-            // "\x5C\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00"
-            // }, {
-            typeof (UserPresenceBundle),
-            "\x60\x00\x00\x06\x00\x00\x00\x01\x00\x12\x34\x56\x00"
-            },
-        };
-
         [Fact]
-        public void TestParsePacket () {
-            foreach (var i in packets) {
-                using (var stream = new MemoryStream (
-                    Encoding.UTF8.GetBytes (i.Value)
-                ))
-                using (var serializer = new BanchoPacketReader (stream)) {
-                    IPacket test = serializer.ReadPacket ();
-                    Assert.True (test.GetType () == i.Key);
+        public async void TestParsePacketFromFile () {
+            byte[] content = await File.ReadAllBytesAsync ("../../../test.raw");
+            using (var stream = new MemoryStream (content))
+            using (var serializer = new BanchoPacketReader (stream)) {
+                while (true) {
+                    try {
+                        var packet = serializer.ReadPacket ();
+                        LogPacket (packet);
+                    } catch (NotImplementedException) {
+                        Console.WriteLine ("unknown packet");
+                    } catch (EndOfStreamException) {
+                        break;
+                    }
                 }
+            }
+        }
+        void LogPacket (IPacket packet) {
+            Console.Write ($"[{packet.GetType ().ToString ().Split ('.').Last ()}] ");
+            switch (packet.GetType ().ToString ().Split ('.').Last ()) {
+            case "UserPresenceBundle":
+                var p1 = packet as UserPresenceBundle;
+                Console.WriteLine (p1.onlineUsers.Count + " users found");
+                break;
+            case "ChatChannelJoinSuccess":
+                Console.WriteLine (
+                    (packet as ChatChannelJoinSuccess).channel +
+                    " channel joined");
+                break;
+            case "ChatChannelDetail":
+                Console.WriteLine (
+                    (packet as ChatChannelDetail).name +
+                    " channel available"
+                );
+                break;
+            case "ChatChannelListingComplete":
+                Console.WriteLine ("finished listing channels");
+                break;
+            case "UserPresenceSingle":
+                Console.WriteLine(
+                    (packet as UserPresenceSingle).user_id + 
+                    " joined the game"
+                );
+                break;
+            case "UserQuit":
+                Console.WriteLine (
+                    (packet as UserQuit).user_id +
+                    " quitted the game"
+                );
+                break;
             }
         }
     }
