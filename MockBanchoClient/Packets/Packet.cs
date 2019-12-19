@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
@@ -13,8 +14,8 @@ namespace MockBanchoClient.Packets {
         }
     }
     public interface IPacket {
-        byte[] GetBytes ();
-        void ReadFromReader (BanchoPacketReader reader);
+        void WriteTo (BanchoPacketWriter writer);
+        void ReadFrom (BanchoPacketReader reader);
     }
     public static class PacketFactory {
         private static Dictionary<short, Type> loadedPacketTypes =
@@ -43,9 +44,17 @@ namespace MockBanchoClient.Packets {
         ) {
             if (!typesLoaded) { LoadPacketTypes (); typesLoaded = true; }
             if (loadedPacketTypes.ContainsKey (packet_type)) {
-                return (IPacket) loadedPacketTypes[packet_type].GetConstructor (
+                IPacket packet = (IPacket) loadedPacketTypes[packet_type].GetConstructor (
+                    new Type[] { }
+                ).Invoke (new object[] { });
+                loadedPacketTypes[packet_type].GetMethod (
+                    "ReadFrom",
                     new Type[] { typeof (BanchoPacketReader) }
-                ).Invoke (new object[] { reader });
+                ).Invoke (
+                    packet,
+                    new object[] { reader }
+                );
+                return packet;
             }
             throw new KeyNotFoundException ("Unknown Packet Type");
         }
