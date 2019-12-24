@@ -91,7 +91,10 @@ namespace MockBanchoClient.Serialization {
         }
     }
     public class BanchoPacketWriter : BinaryWriter {
-
+        public BanchoPacketWriter (Stream output) : base (output) { }
+        public void Write (IPacket packet) {
+            packet.WriteTo (this);
+        }
     }
 
 }

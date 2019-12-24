@@ -26,12 +26,13 @@ namespace MockBanchoClient.Packets {
             CatchTheBeat,
             Mania
         }
+
         [System.Flags]
         public enum Mods : uint {
             None = 0,
             NoFail = 1 << 0,
             Easy = 1 << 1,
-            TouchDevice = 1 << 2, //previously NoVideo
+            TouchDevice = 1 << 2,
             Hidden = 1 << 3,
             HardRock = 1 << 4,
             SuddenDeath = 1 << 5,
@@ -40,9 +41,9 @@ namespace MockBanchoClient.Packets {
             HalfTime = 1 << 8,
             Nightcore = 1 << 9,
             Flashlight = 1 << 10,
-            Autoplay = 1 << 11,
+            Auto = 1 << 11,
             SpunOut = 1 << 12,
-            Relax2 = 1 << 13, //AutoPilot
+            AutoPilot = 1 << 13,
             Perfect = 1 << 14,
             Key4 = 1 << 15,
             Key5 = 1 << 16,
@@ -77,7 +78,8 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            throw new System.NotImplementedException ();
+            writer.Write ((byte) action);
+            writer.Write (action_description);
         }
     }
 }

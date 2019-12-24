@@ -26,62 +26,66 @@ namespace MockBanchoClientTest {
         }
         void LogPacket (IPacket packet) {
             Console.Write ($"[{packet.GetType ().ToString ().Split ('.').Last ()}] ");
-            switch (packet.GetType ().ToString ().Split ('.').Last ()) {
-            case "BanchoVersion":
-                Console.WriteLine ((packet as BanchoVersion).version);
-                break;
-            case "UserPresenceBundle":
-                var p1 = packet as UserPresenceBundle;
-                Console.WriteLine (p1.onlineUsers.Count + " users found");
-                break;
-            case "ChatChannelJoinSuccess":
-                Console.WriteLine (
-                    (packet as ChatChannelJoinSuccess).channel +
-                    " channel joined");
-                break;
-            case "ChatChannelDetail":
-                Console.WriteLine (
-                    (packet as ChatChannelDetail).name +
-                    " channel available"
-                );
-                break;
-            case "ChatChannelListingComplete":
-                Console.WriteLine ("finished listing channels");
-                break;
-            case "UserDetail":
-                Console.WriteLine((packet as UserDetail).user_id);
-                break;
-            case "UserPresenceSingle":
-                Console.WriteLine (
-                    (packet as UserPresenceSingle).user_id +
-                    " joined the game"
-                );
-                break;
-            case "UserQuit":
-                Console.WriteLine (
-                    (packet as UserQuit).user_id +
-                    " quitted the game"
-                );
-                break;
-            case "LockClient":
-                Console.WriteLine (
-                    "client locked for " +
-                    (packet as LockClient).length +
-                    " seconds"
-                );
-                break;
-            case "LoginReply":
-                Console.WriteLine (
-                    (packet as LoginReply).logged_in? "logged in": "login failed"
-                );
-                break;
-            case "MainMenuNews":
-                Console.WriteLine ((packet as MainMenuNews).news);
-                break;
-            default:
-                Console.WriteLine ();
-                break;
-            }
+            Console.WriteLine (Newtonsoft.Json.JsonConvert.SerializeObject (
+                packet, Newtonsoft.Json.Formatting.Indented
+            ));
+        //     return;
+        //     switch (packet.GetType ().ToString ().Split ('.').Last ()) {
+        //     case "BanchoVersion":
+        //         Console.WriteLine ((packet as BanchoVersion).version);
+        //         break;
+        //     case "UserPresenceBundle":
+        //         var p1 = packet as UserPresenceBundle;
+        //         Console.WriteLine (p1.onlineUsers.Count + " users found");
+        //         break;
+        //     case "ChatChannelJoinSuccess":
+        //         Console.WriteLine (
+        //             (packet as ChatChannelJoinSuccess).channel +
+        //             " channel joined");
+        //         break;
+        //     case "ChatChannelDetail":
+        //         Console.WriteLine (
+        //             (packet as ChatChannelDetail).name +
+        //             " channel available"
+        //         );
+        //         break;
+        //     case "ChatChannelListingComplete":
+        //         Console.WriteLine ("finished listing channels");
+        //         break;
+        //     case "UserDetail":
+        //         Console.WriteLine ((packet as UserDetail).user_id);
+        //         break;
+        //     case "UserPresenceSingle":
+        //         Console.WriteLine (
+        //             (packet as UserPresenceSingle).user_id +
+        //             " joined the game"
+        //         );
+        //         break;
+        //     case "UserQuit":
+        //         Console.WriteLine (
+        //             (packet as UserQuit).user_id +
+        //             " quitted the game"
+        //         );
+        //         break;
+        //     case "LockClient":
+        //         Console.WriteLine (
+        //             "client locked for " +
+        //             (packet as LockClient).length +
+        //             " seconds"
+        //         );
+        //         break;
+        //     case "LoginReply":
+        //         Console.WriteLine (
+        //             (packet as LoginReply).logged_in? "logged in": "login failed"
+        //         );
+        //         break;
+        //     case "MainMenuNews":
+        //         Console.WriteLine ((packet as MainMenuNews).news);
+        //         break;
+        //     default:
+        //         Console.WriteLine ();
+        //         break;
+        //     }
         }
     }
 }

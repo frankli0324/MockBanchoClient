@@ -1,8 +1,8 @@
-using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MockBanchoClient.Extension {
+namespace System {
     public static class StringExtensions {
 
         /// <summary>
@@ -22,6 +22,12 @@ namespace MockBanchoClient.Extension {
                     Encoding.UTF8.GetBytes (str)
                 )) res += b.ToString ("x2");
             return res;
+        }
+    }
+    public static class StreamExtensions {
+        public static void WriteLine (this Stream stream_0, string str) {
+            byte[] bytes = Encoding.UTF8.GetBytes (str + "\r\n");
+            stream_0.Write (bytes, 0, bytes.Length);
         }
     }
 }
