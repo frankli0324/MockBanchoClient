@@ -7,9 +7,17 @@ using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
     [AttributeUsage (AttributeTargets.Class)]
-    public class PacketAttribute : Attribute {
-        public short packet_code { get; private set; }
-        public PacketAttribute (short code) {
+    public class RecvAttribute : Attribute {
+        public ushort packet_code { get; private set; }
+        public RecvAttribute (ushort code) {
+            this.packet_code = code;
+        }
+    }
+
+    [AttributeUsage (AttributeTargets.Class)]
+    public class SendAttribute : Attribute {
+        public ushort packet_code { get; private set; }
+        public SendAttribute (ushort code) {
             this.packet_code = code;
         }
     }
@@ -18,8 +26,8 @@ namespace MockBanchoClient.Packets {
         void ReadFrom (BanchoPacketReader reader);
     }
     public static class PacketFactory {
-        private static Dictionary<short, Type> loadedPacketTypes =
-            new Dictionary<short, Type> ();
+        private static Dictionary<ushort, Type> loadedPacketTypes =
+            new Dictionary<ushort, Type> ();
         private static bool typesLoaded = false;
         private static void LoadPacketTypes () {
             var q = (
@@ -29,17 +37,17 @@ namespace MockBanchoClient.Packets {
                 .GetCurrentMethod ()
                 .DeclaringType.Namespace && t
                 .GetCustomAttribute (
-                    typeof (PacketAttribute)
+                    typeof (RecvAttribute)
                 ) != null select t
             ).ToList ();
             foreach (var i in q) {
                 loadedPacketTypes[(i.GetCustomAttribute (
-                    typeof (PacketAttribute)
-                ) as PacketAttribute).packet_code] = i;
+                    typeof (RecvAttribute)
+                ) as RecvAttribute).packet_code] = i;
             }
         }
         public static IPacket CreatePacket (
-            short packet_type,
+            ushort packet_type,
             BanchoPacketReader reader
         ) {
             if (!typesLoaded) { LoadPacketTypes (); typesLoaded = true; }

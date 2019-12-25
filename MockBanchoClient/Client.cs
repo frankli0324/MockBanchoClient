@@ -15,7 +15,9 @@ namespace MockBanchoClient {
         private string token = "", username = "", password = "";
         Queue<Packets.IPacket> send_queue = new Queue<Packets.IPacket> ();
         object send_queue_lock = new object ();
-        private pWebRequest ActiveRequest = null;
+        private pWebRequest active_request = null;
+        private DateTime last_request;
+        object request_lock = new object ();
         private string version = "b20191223.6";
         private string timezone = "8";
         private string executable_md5 = "2696a60f471503473dc42f041cebbde1";
@@ -79,28 +81,33 @@ namespace MockBanchoClient {
             if (response.IsSuccessStatusCode == false)
                 return false;
             this.token = response.Headers.GetValues ("cho-token").First ();
-            send_queue.Enqueue (new Packets.LoginPacket (
+            send_queue.Enqueue (new Packets.LoginRequest (
                 username, password, version, timezone, client_hash
             ));
             return true;
         }
-        private pWebRequest GetRequest () {
+        private void Reconnect () {
             MemoryStream stream = new MemoryStream ();
             BanchoPacketWriter writer = new BanchoPacketWriter (stream);
             try {
-                lock (send_queue_lock) {
-                    while (send_queue.Any ()) {
-                        writer.Write (send_queue.Dequeue ());
+                lock (request_lock) {
+                    lock (send_queue_lock) {
+                        while (send_queue.Any ()) {
+                            writer.Write (send_queue.Dequeue ());
+                        }
                     }
+                    stream.Seek (0, SeekOrigin.Begin);
+                    active_request = new pWebRequest (
+                        "https://c4.ppy.sh", new object[0]
+                    );
+                    active_request.AddHeader ("osu-token", token);
+                    active_request.AddHeader ("osu-version", version);
+                    active_request.AddRaw (stream);
+                    if (TimeSpan.FromMinutes (1) - (DateTime.Now - last_request) > TimeSpan.Zero)
+                        Thread.Sleep (TimeSpan.FromMinutes (1) - (DateTime.Now - last_request));
+                    active_request.BlockingPerform ();
+                    last_request = DateTime.Now;
                 }
-                stream.Seek (0, SeekOrigin.Begin);
-                pWebRequest request = new pWebRequest (
-                    "https://c4.ppy.sh", new object[0]
-                );
-                request.AddHeader ("osu-token", token);
-                request.AddHeader ("osu-version", version);
-                request.AddRaw (stream);
-                return request;
             } finally {
                 writer.Dispose ();
                 stream.Dispose ();
@@ -108,27 +115,24 @@ namespace MockBanchoClient {
         }
         public IEnumerable<Packets.IPacket> Poll () {
             while (true) {
-                ActiveRequest = GetRequest ();
-                ActiveRequest.BlockingPerform ();
-                var res_stream = ActiveRequest.ResponseStream;
+                Reconnect ();
+                var res_stream = active_request.ResponseStream;
                 using (var serializer = new BanchoPacketReader (res_stream)) {
                     while (true) {
                         Packets.IPacket packet = null;
                         long start_position = res_stream.Position;
                         try {
-                            while (!(ActiveRequest.Completed || ActiveRequest.Aborted) &&
+                            while (!(active_request.Completed || active_request.Aborted) &&
                                 res_stream.Position == res_stream.Length) {
                                 Thread.Sleep (500);
                             }
                             packet = serializer.ReadPacket ();
                         } catch (Exception) {
-                            if (ActiveRequest.Completed || ActiveRequest.Aborted) {
+                            if (active_request.Completed || active_request.Aborted) {
                                 Console.WriteLine ("connection completed or aborted");
-                                ActiveRequest.Dispose ();
-                                Thread.Sleep (10000);
-                                ActiveRequest = GetRequest ();
-                                ActiveRequest.BlockingPerform ();
-                                res_stream = ActiveRequest.ResponseStream;
+                                active_request.Dispose ();
+                                Reconnect ();
+                                res_stream = active_request.ResponseStream;
                             } else {
                                 res_stream.Seek (start_position, SeekOrigin.Begin);
                             }

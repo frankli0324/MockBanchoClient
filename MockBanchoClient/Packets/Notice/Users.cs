@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
-    [Packet (11)]
+    [Recv (11)]
     public class UserDetail : IPacket {
         public int user_id;
         public UserStatus status = new UserStatus ();
@@ -28,7 +28,7 @@ namespace MockBanchoClient.Packets {
         }
     }
 
-    [Packet (83)]
+    [Recv (83)]
     public class UserPresenceDetail : IPacket {
         [System.Flags]
         public enum PlayerRank : byte {
@@ -76,7 +76,7 @@ namespace MockBanchoClient.Packets {
         }
     }
 
-    [Packet (95)]
+    [Recv (95)]
     public class UserPresenceSingle : IPacket {
         public int user_id;
         public void ReadFrom (BanchoPacketReader reader) {
@@ -88,7 +88,7 @@ namespace MockBanchoClient.Packets {
         }
     }
 
-    [Packet (96)]
+    [Recv (96)]
     public class UserPresenceBundle : IPacket {
         public List<int> onlineUsers;
         public void ReadFrom (BanchoPacketReader reader) {
@@ -100,7 +100,7 @@ namespace MockBanchoClient.Packets {
         }
     }
 
-    [Packet (12)]
+    [Recv (12)]
     public class UserQuit : IPacket {
         public enum UserQuitType {
             FullDisconnect,

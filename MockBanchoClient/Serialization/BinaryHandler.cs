@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using MockBanchoClient.Packets;
 namespace MockBanchoClient.Serialization {
     /// <summary>
@@ -79,7 +80,7 @@ namespace MockBanchoClient.Serialization {
             return body;
         }
         public IPacket ReadPacket () {
-            short type = ReadInt16 ();
+            ushort type = ReadUInt16 ();
             ReadByte (); // skipped byte
             int body_length = ReadInt32 ();
             var start = this.BaseStream.Position;
@@ -93,8 +94,35 @@ namespace MockBanchoClient.Serialization {
     public class BanchoPacketWriter : BinaryWriter {
         public BanchoPacketWriter (Stream output) : base (output) { }
         public void Write (IPacket packet) {
+            ushort type = (packet.GetType ().GetCustomAttribute (
+                typeof (SendAttribute)
+            ) as SendAttribute).packet_code;
+            BaseStream.Seek (7, SeekOrigin.Current);
+            long length = BaseStream.Position;
             packet.WriteTo (this);
+            if (packet is LoginRequest) return;
+            length = BaseStream.Position - length;
+            BaseStream.Seek (-length - 7, SeekOrigin.Current);
+            Write (type);
+            Write ((byte) 0);
+            Write ((uint) length);
+            BaseStream.Seek (length, SeekOrigin.Current);
         }
+        public void Write (DateTime time) {
+            this.Write (time.ToUniversalTime ().Ticks);
+        }
+        public void Write<T> (List<T> packet_list) where T : IPacket {
+            if (packet_list == null) {
+                this.Write (-1);
+                return;
+            }
+            int count = packet_list.Count;
+            this.Write (count);
+            for (int i = 0; i < count; i++) {
+                packet_list[i].WriteTo (this);
+            }
+        }
+
     }
 
 }

@@ -2,7 +2,7 @@ using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
 
-    [Packet (0)]
+    [Recv (0)]
     public class UserStatus : IPacket {
         public enum PlayerAction {
             Idle,

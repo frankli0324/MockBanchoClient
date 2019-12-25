@@ -1,7 +1,8 @@
+using System;
 using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
-    [Packet (92)]
+    [Recv (92)]
     public class LockClient : IPacket {
         public int length; // in seconds
         public void ReadFrom (BanchoPacketReader reader) {
@@ -9,11 +10,11 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            throw new System.NotImplementedException ();
+            throw new NotImplementedException ();
         }
     }
 
-    [Packet (5)]
+    [Recv (5)]
     public class LoginReply : IPacket {
         public int reply;
         public bool logged_in { get => reply > 0; }
@@ -22,11 +23,22 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            throw new System.NotImplementedException ();
+            throw new NotImplementedException ();
         }
     }
 
-    [Packet (71)]
+    [Recv (75)]
+    public class BanchoVersion : IPacket {
+        public int version { get; private set; }
+        public void ReadFrom (Serialization.BanchoPacketReader reader) {
+            this.version = reader.ReadInt32 ();
+        }
+        public void WriteTo (BanchoPacketWriter writer) {
+            throw new NotImplementedException ();
+        }
+    }
+
+    [Recv (71)]
     public class UserPermission : IPacket {
         public int permission;
         public void ReadFrom (BanchoPacketReader reader) {
@@ -34,11 +46,11 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            throw new System.NotImplementedException ();
+            throw new NotImplementedException ();
         }
     }
 
-    [Packet (76)]
+    [Recv (76)]
     public class MainMenuNews : IPacket {
         public string news;
         public void ReadFrom (BanchoPacketReader reader) {
@@ -46,7 +58,7 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            throw new System.NotImplementedException ();
+            throw new NotImplementedException ();
         }
     }
 }

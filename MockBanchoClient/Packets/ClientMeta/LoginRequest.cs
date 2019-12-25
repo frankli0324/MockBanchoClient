@@ -1,11 +1,13 @@
 using System;
+using System.IO;
 using System.Text;
 using MockBanchoClient.Serialization;
 
 namespace MockBanchoClient.Packets {
-    public class LoginPacket : IPacket {
+    [Send (256)]
+    public class LoginRequest : IPacket {
         string login_info;
-        public LoginPacket (string username, string password, string version, string timezone, string client_hash) {
+        public LoginRequest (string username, string password, string version, string timezone, string client_hash) {
             login_info = "" +
                 username + '\n' +
                 password.Md5 () + '\n' +
@@ -16,6 +18,7 @@ namespace MockBanchoClient.Packets {
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
+            writer.BaseStream.Seek (-7, SeekOrigin.Current);
             writer.BaseStream.Write (Encoding.UTF8.GetBytes (login_info));
         }
     }
