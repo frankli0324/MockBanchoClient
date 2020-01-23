@@ -52,9 +52,10 @@ namespace MockBanchoClient.Packets {
 
     [Recv (76)]
     public class MainMenuNews : IPacket {
-        public string news;
+        public string imageUrl, linkUrl;
         public void ReadFrom (BanchoPacketReader reader) {
-            news = reader.ReadString ();
+            var array = reader.ReadString ().Split ('|');
+            (imageUrl, linkUrl) = (array[0], (array.Length > 1) ? array[1] : null);
         }
 
         public void WriteTo (BanchoPacketWriter writer) {

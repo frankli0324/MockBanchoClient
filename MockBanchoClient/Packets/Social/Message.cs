@@ -19,12 +19,32 @@ namespace MockBanchoClient.Packets {
         }
     }
 
+    static class MessageExtension {
+        public static Message ReadMessage (this BanchoPacketReader reader) {
+            Message message = new Message ();
+            message.ReadFrom (reader);
+            return message;
+        }
+    }
+
+    [Send (1)]
+    public class PublicChatMessage : IPacket {
+        Message message;
+        public PublicChatMessage (Message m) => message = m;
+        public void ReadFrom (BanchoPacketReader reader) {
+            throw new System.NotImplementedException ();
+        }
+
+        public void WriteTo (BanchoPacketWriter writer) {
+            message.WriteTo (writer);
+        }
+    }
+
     [Recv (7)]
     public class ChatMessage : IPacket {
         public Message message;
         public void ReadFrom (BanchoPacketReader reader) {
-            message = new Message ();
-            message.ReadFrom (reader);
+            message = reader.ReadMessage ();
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
@@ -45,34 +65,33 @@ namespace MockBanchoClient.Packets {
         }
     }
 
-    [Send (1)]
-    public class PublicChatMessage : IPacket {
-        Message message;
-        public PublicChatMessage (Message m) => message = m;
+    [Recv (100)]
+    /// <summary>
+    /// Target user is not your friend and blocked privated messages from strangers
+    /// </summary>
+    public class MessageBlocked : IPacket {
+        public Message message;
         public void ReadFrom (BanchoPacketReader reader) {
+            message = reader.ReadMessage ();
+        }
+
+        public void WriteTo (BanchoPacketWriter writer) {
             throw new System.NotImplementedException ();
         }
-
-        public void WriteTo (BanchoPacketWriter writer) {
-            message.WriteTo (writer);
-        }
     }
 
-    [Send (87)][Recv (88)]
-    public class MultiInvite : IPacket {
+    [Recv (101)]
+    /// <summary>
+    /// Target user is silenced
+    /// </summary>
+    public class MessageSilenced : IPacket {
         public Message message;
-        int user_id;
-        public MultiInvite (int user_id) {
-            this.user_id = user_id;
-        }
         public void ReadFrom (BanchoPacketReader reader) {
-            message = new Message ();
-            message.ReadFrom (reader);
+            message = reader.ReadMessage ();
         }
 
         public void WriteTo (BanchoPacketWriter writer) {
-            writer.Write (user_id);
+            throw new System.NotImplementedException ();
         }
     }
-
 }

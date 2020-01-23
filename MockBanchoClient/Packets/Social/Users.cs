@@ -28,6 +28,37 @@ namespace MockBanchoClient.Packets {
         }
     }
 
+    [Recv (12)]
+    public class UserQuit : IPacket {
+        public enum UserQuitType {
+            FullDisconnect,
+            StillInClient,
+            StillOnIrc
+        }
+        public int user_id;
+        public UserQuitType quit_type;
+        public void ReadFrom (BanchoPacketReader reader) {
+            user_id = reader.ReadInt32 ();
+            quit_type = (UserQuitType) reader.ReadByte ();
+        }
+
+        public void WriteTo (BanchoPacketWriter writer) {
+            throw new NotImplementedException ();
+        }
+    }
+
+    [Recv (72)]
+    public class FriendList : IPacket {
+        public List<int> friends = new List<int> ();
+        public void ReadFrom (BanchoPacketReader reader) {
+            friends = reader.ReadInt32List ();
+        }
+
+        public void WriteTo (BanchoPacketWriter writer) {
+            throw new System.NotImplementedException ();
+        }
+    }
+
     [Recv (83)]
     public class UserPresenceDetail : IPacket {
         [System.Flags]
@@ -93,25 +124,6 @@ namespace MockBanchoClient.Packets {
         public List<int> onlineUsers;
         public void ReadFrom (BanchoPacketReader reader) {
             this.onlineUsers = reader.ReadInt32List ();
-        }
-
-        public void WriteTo (BanchoPacketWriter writer) {
-            throw new NotImplementedException ();
-        }
-    }
-
-    [Recv (12)]
-    public class UserQuit : IPacket {
-        public enum UserQuitType {
-            FullDisconnect,
-            StillInClient,
-            StillOnIrc
-        }
-        public int user_id;
-        public UserQuitType quit_type;
-        public void ReadFrom (BanchoPacketReader reader) {
-            user_id = reader.ReadInt32 ();
-            quit_type = (UserQuitType) reader.ReadByte ();
         }
 
         public void WriteTo (BanchoPacketWriter writer) {

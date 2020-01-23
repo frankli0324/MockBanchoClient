@@ -24,8 +24,6 @@ namespace MockBanchoClient.Helpers {
 
         public int Timeout = 16384;
 
-        // private static Logger logger;
-
         private static SmartThreadPool threadPool;
 
         private IWorkItemResult workItem;

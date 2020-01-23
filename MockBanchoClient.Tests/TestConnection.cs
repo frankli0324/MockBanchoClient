@@ -6,7 +6,7 @@ using Xunit;
 
 namespace MockBanchoClientTest {
     public class Connection {
-        [Fact]
+        // [Fact]
         public async void TestConnection () {
             var client = new Client ();
             var creds = Newtonsoft.Json.Linq.JArray.Parse (
